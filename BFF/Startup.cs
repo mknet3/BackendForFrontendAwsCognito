@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace BackendForFrontend
@@ -34,11 +35,24 @@ namespace BackendForFrontend
             })
             .AddCookie(o =>
             {
+                o.Events.OnRedirectToAccessDenied = context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    return context.Response.CompleteAsync();
+                };
+                
                 o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 o.Cookie.SameSite = SameSiteMode.Strict;
                 o.Cookie.HttpOnly = true;
             })
             .AddOpenIdConnect("AWSCognito", ConfigureOpenIdConnect);
+
+            var allowedGroupsPerPolicy = Configuration.GetSection("AWSCognito:PolicyGroups")
+                .Get<Dictionary<string, string[]>>();
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("ReadWrite", policy => policy.RequireClaim("cognito:groups", allowedGroupsPerPolicy["ReadWrite"]));
+            });
 
             services.AddControllersWithViews();
 

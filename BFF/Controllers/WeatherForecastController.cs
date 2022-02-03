@@ -13,7 +13,7 @@ using System.Net.Http.Headers;
 namespace BackendForFrontend.Controllers
 {
     [ApiController]
-    [Authorize]
+    [Authorize("ReadWrite")]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
