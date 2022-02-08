@@ -42,10 +42,16 @@ namespace BackendForFrontend
                 };
                 
                 o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                o.Cookie.SameSite = SameSiteMode.Strict;
-                o.Cookie.HttpOnly = true;
+                o.Cookie.SameSite = SameSiteMode.None;
+                o.Cookie.HttpOnly = false;
             })
             .AddOpenIdConnect("AWSCognito", ConfigureOpenIdConnect);
+
+            services.AddCors(c => c.AddDefaultPolicy(cc => cc.WithOrigins("http://localhost:5555")
+                .SetIsOriginAllowed(o => true)
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials()));
 
             var allowedGroupsPerPolicy = Configuration.GetSection("AWSCognito:PolicyGroups")
                 .Get<Dictionary<string, string[]>>();
@@ -82,6 +88,7 @@ namespace BackendForFrontend
             app.UseSpaStaticFiles();
 
             app.UseRouting();
+            app.UseCors();
 
             app.UseAuthentication();
             app.UseAuthorization();
@@ -93,15 +100,15 @@ namespace BackendForFrontend
                     pattern: "{controller}/{action=Index}/{id?}");
             });
 
-            app.UseSpa(spa =>
-            {
-                spa.Options.SourcePath = "ClientApp";
-
-                if (env.IsDevelopment())
-                {
-                    spa.UseReactDevelopmentServer(npmScript: "start");
-                }
-            });
+            // app.UseSpa(spa =>
+            // {
+            //     spa.Options.SourcePath = "ClientApp";
+            //
+            //     if (env.IsDevelopment())
+            //     {
+            //         spa.UseReactDevelopmentServer(npmScript: "start");
+            //     }
+            // });
         }
 
         private void ConfigureOpenIdConnect(OpenIdConnectOptions options)

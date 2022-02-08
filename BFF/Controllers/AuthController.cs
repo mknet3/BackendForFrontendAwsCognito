@@ -9,7 +9,7 @@ namespace BackendForFrontend.Controllers
 {
     public class AuthController : Controller
     {
-        public ActionResult Login(string returnUrl = "/")
+        public ActionResult Login(string returnUrl = "http://localhost:5555")
         {
             return new ChallengeResult("AWSCognito", new AuthenticationProperties
             {
